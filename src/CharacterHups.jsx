@@ -75,29 +75,35 @@ const CharacterHup = function(props) {
     }
   }, [hupRef, localOpen, hups, hups.length]);
   useEffect(() => {
-    // console.log('set full text', hup);
+    console.log('set full text', hup);
     setFullText(hup.fullText);
-  }, []);
+  },[hup]);
   useEffect(() => {
     // console.log('effect 3', hup);
     function voicestart(e) {
-      // console.log('voice start', hup.fullText, e.data, e.data.fullText);
+      console.log('voice start', hup.fullText, e.data, e.data.fullText);
       setLocalOpen(true);
       setFullText(e.data.fullText);
     }
     hup.addEventListener('voicestart', voicestart);
     function destroy(e) {
+      console.log(`Destroy hups`, hup)
       const player = hup.parent.player;
       chatDioramas.delete(player);
-
+      const hupIndex = hups.indexOf(hup);
+      const newHups = hups.slice();
+      newHups.splice(hupIndex, 1);
+      setHups(newHups);
+      console.log('hups destroy', newHups)
       setLocalOpen(false);
     }
     hup.addEventListener('destroy', destroy);
     return () => {
+      console.log(`effect 3 remove`, hup)
       hup.removeEventListener('voicestart', voicestart);
-      hup.removeEventListener('destroy', destroy);
+      //hup.removeEventListener('destroy', destroy);
     };
-  }, [hup, localOpen]);
+  }, [hup, localOpen, hups, hups.length]);
   useEffect(() => {
     // console.log('start animation frame', hup);
     const animationFrame = requestAnimationFrame(() => {
@@ -155,6 +161,7 @@ export default function CharacterHups({
     function hupadd(e) {
       const newHups = hups.concat([e.data.hup]);
       // console.log('new hups', newHups);
+      console.log('new hups from jsx', newHups);
       setHups(newHups);
     }
     function hupremove(e) {
@@ -166,16 +173,17 @@ export default function CharacterHups({
       setHups(newHups);
     }
     localPlayer.characterHups.addEventListener('hupadd', hupadd);
-    localPlayer.characterHups.addEventListener('hupremove', hupremove);
+    //localPlayer.characterHups.addEventListener('hupremove', hupremove);
     for (const npcPlayer of npcs) {
       npcPlayer.characterHups.addEventListener('hupadd', hupadd);
       npcPlayer.characterHups.addEventListener('hupremove', hupremove);
     }
 
     const remotePlayers = playersManager.getRemotePlayers();
-    for (const remotePlayer in remotePlayers) {
+    //for (const remotePlayer in remotePlayers) {
+      for (const remotePlayer of remotePlayers.values()) {
       remotePlayer.characterHups.addEventListener('hupadd', hupadd);
-      remotePlayer.characterHups.addEventListener('hupremove', hupremove);
+      //remotePlayer.characterHups.addEventListener('hupremove', hupremove);
     }
 
     const handlePlayerAdd = (e) => {
@@ -194,14 +202,15 @@ export default function CharacterHups({
 
     return () => {
       localPlayer.characterHups.removeEventListener('hupadd', hupadd);
-      localPlayer.characterHups.removeEventListener('hupremove', hupremove);
+      //localPlayer.characterHups.removeEventListener('hupremove', hupremove);
       for (const npcPlayer of npcs) {
         npcPlayer.characterHups.removeEventListener('hupadd', hupadd);
-        npcPlayer.characterHups.removeEventListener('hupremove', hupremove);
+        //npcPlayer.characterHups.removeEventListener('hupremove', hupremove);
       }
-      for (const remotePlayer in remotePlayers) {
+    //for (const remotePlayer in remotePlayers) {
+      for (const remotePlayer of remotePlayers.values()) {
         remotePlayer.characterHups.removeEventListener('hupadd', hupadd);
-        localPlayer.characterHups.removeEventListener('hupremove', hupremove);
+        //remotePlayer.characterHups.removeEventListener('hupremove', hupremove);
       }
     };
   }, [localPlayer, npcs, remotePlayers, hups]);

@@ -125,6 +125,7 @@ class CharacterHups extends EventTarget {
           }
         });
         newHup.addEventListener('deadtimeout', () => {
+          console.log(`destroy character hups `, newHup)
           newHup.destroy();
 
           const index = this.hups.indexOf(newHup);
